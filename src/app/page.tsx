@@ -1,65 +1,156 @@
-import Image from "next/image";
+'use client'
+
+import { useState, useEffect } from 'react'
+import Nav from '@/components/Nav'
+import Hero from '@/components/Hero'
+import KpiCards from '@/components/KpiCards'
+import About from '@/components/About'
+import Projects from '@/components/Projects'
+import Skills from '@/components/Skills'
+import Insights from '@/components/Insights'
+import Contact from '@/components/Contact'
+import AdminPanel from '@/components/AdminPanel'
+import FloatingButtons from '@/components/FloatingButtons'
+import CertModal from '@/components/CertModal'
+import ProjectModal from '@/components/ProjectModal'
+import CvModal from '@/components/CvModal'
+
+export type Project = {
+  _id: string
+  cat: string
+  year: string
+  title: string
+  description: string
+  tags: string[]
+  gh: string
+  img: string
+  featured: boolean
+  groupProject: boolean
+  status: string
+  dataScale?: number
+  useSvg: boolean
+  displayOrder: number
+}
+
+export type Certificate = {
+  _id: string
+  name: string
+  issuer: string
+  file: string
+  fileType: string
+  displayOrder: number
+}
+
+export type Settings = {
+  cv_url?: string
+  skills?: {
+    lang: { name: string; level: string }[]
+    data: { name: string; level: string }[]
+  }
+}
 
 export default function Home() {
+  const [projects, setProjects]   = useState<Project[]>([])
+  const [certs, setCerts]         = useState<Certificate[]>([])
+  const [settings, setSettings]   = useState<Settings>({ cv_url: '', skills: undefined })
+  const [loading, setLoading]     = useState(true)
+  const [dark, setDark]           = useState(true)
+  const [adminOpen, setAdminOpen] = useState(false)
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const [selectedCert, setSelectedCert]       = useState<Certificate | null>(null)
+  const [cvOpen, setCvOpen]       = useState(false)
+
+  // Theme memory
+  useEffect(() => {
+    const saved = localStorage.getItem('sr_theme') || 'dark'
+    setDark(saved === 'dark')
+  }, [])
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
+    localStorage.setItem('sr_theme', dark ? 'dark' : 'light')
+  }, [dark])
+
+  // Fetch all data on mount
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  async function loadData() {
+    setLoading(true)
+    try {
+      const [projRes, certRes, settRes] = await Promise.all([
+        fetch('/api/projects'),
+        fetch('/api/certificates'),
+        fetch('/api/settings'),
+      ])
+
+      const [projData, certData, settData] = await Promise.all([
+        projRes.json(),
+        certRes.json(),
+        settRes.json(),
+      ])
+
+      console.log('Loaded projects:', projData?.length)
+      console.log('Loaded certs:', certData?.length)
+      console.log('Loaded settings:', settData)
+
+      if (Array.isArray(projData)) setProjects(projData)
+      if (Array.isArray(certData)) setCerts(certData)
+      if (settData && typeof settData === 'object') setSettings(settData)
+    } catch (e) {
+      console.error('Failed to load data:', e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: '#3a3d42', fontFamily: 'DM Sans, sans-serif', color: '#eceef2',
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+            Sandali Ruwanya
+          </div>
+          <div style={{ color: 'rgba(236,238,242,0.5)', fontSize: '0.85rem' }}>Loading portfolio...</div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <>
+      <Nav dark={dark} setDark={setDark} />
+      <Hero cvOpen={() => setCvOpen(true)} />
+      <KpiCards projects={projects} />
+      <About settings={settings} />
+      <Projects projects={projects} onSelectProject={setSelectedProject} />
+      <Skills certs={certs} settings={settings} onSelectCert={setSelectedCert} />
+      <Insights projects={projects} dark={dark} />
+      <Contact />
+      <FloatingButtons onAdminOpen={() => setAdminOpen(true)} />
+
+      {selectedProject && (
+        <ProjectModal project={selectedProject} onClose={() => setSelectedProject(null)} />
+      )}
+      {selectedCert && (
+        <CertModal cert={selectedCert} onClose={() => setSelectedCert(null)} />
+      )}
+      {cvOpen && (
+        <CvModal cvUrl={settings.cv_url || ''} onClose={() => setCvOpen(false)} />
+      )}
+      {adminOpen && (
+        <AdminPanel
+          projects={projects}
+          certs={certs}
+          settings={settings}
+          onClose={() => setAdminOpen(false)}
+          onRefresh={loadData}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+      )}
+    </>
+  )
 }
