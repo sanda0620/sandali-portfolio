@@ -32,7 +32,7 @@ export default function Contact() {
           <div className="sec-eye">Get in Touch</div>
           <h2>Let's Connect</h2>
         </div>
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1.4fr', gap:'2rem', alignItems:'start' }}>
+        <div className="contact-grid" style={{ display:'grid', gap:'2rem', alignItems:'start' }}>
           {/* Links */}
           <div style={{ display:'flex', flexDirection:'column', gap:'0.75rem' }}>
             <p style={{ fontSize:'0.88rem',lineHeight:1.8,color:'var(--txt2)',marginBottom:'0.5rem' }}>Open to internship opportunities, collaborations, and research projects. Drop a message and I'll get back within 24 hours.</p>
@@ -54,7 +54,7 @@ export default function Contact() {
           {/* Form */}
           <div className="gc" style={{ padding:'1.6rem' }}>
             <div className="syne" style={{ fontSize:'0.95rem',fontWeight:600,color:'var(--txt)',marginBottom:'1.2rem' }}>Send a Message</div>
-            <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:'0.75rem',marginBottom:'0.75rem' }}>
+              <div className="contact-form-row" style={{ display:'grid',gap:'0.75rem',marginBottom:'0.75rem' }}>
               <div className="afield"><label>Name</label><input value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Your name" /></div>
               <div className="afield"><label>Email</label><input type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="your@email.com" /></div>
             </div>

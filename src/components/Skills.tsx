@@ -40,7 +40,7 @@ export default function Skills({ certs, settings, onSelectCert }: {
           <h2>Skills & Tools</h2>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.2rem' }} className="sk-grid">
+        <div className="sk-grid" style={{ display: 'grid', gap: '1.2rem' }}>
           {(['lang', 'data'] as const).map(group => (
             <div key={group} className="gc" style={{ padding: '1.5rem' }}>
               <div style={{ fontSize: '0.67rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--txt3)', marginBottom: '1.1rem' }}>
